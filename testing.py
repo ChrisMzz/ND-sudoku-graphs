@@ -5,6 +5,7 @@ from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.patches import Rectangle
 import networkx as nx
 #import nxviz as nv
+from skimage import io
 import sudktools as sudk
 
 
@@ -51,12 +52,13 @@ known_cmaps = {2:'s3_2', 3:'Set1'}
 
 if __name__ == '__main__':
     N = 3
-    sqn = 2
+    sqn = 4
     digits = sqn**2
     
-    wireframe_on = True
-    voxels_on = True
+    wireframe_on = False
+    voxels_on = False
     voxel_projection_on = False
+    save = True
     
     S = sudk.Sudoku(digits=digits,N=N,constraints=())
     
@@ -127,6 +129,11 @@ if __name__ == '__main__':
                 vox = np.zeros((digits,digits,digits)); vox[p[0],p[1],p[2]] = 1
                 ax.voxels(*(np.indices((digits+1,digits+1,digits+1))-1/2), vox, color=tuple(colouring[i][:3])+(0.15,))
                 ax.text(p[0],p[1],p[2],f'{H[i]+1}', size=10)
+        if save:
+            img = np.zeros((digits,)*N)
+            for i,p in enumerate(POS):
+                img[p[0],p[1],p[2]] = H[i]+1
+            io.imsave(f'N3_digits{digits}.tif',img)
                 
         if wireframe_on:
             for e in G.edges():
