@@ -8,7 +8,7 @@ import networkx as nx
 from skimage import io
 import sudktools as sudk
 
-
+import napari.layers
 
 def K(n1, n2=None):
     if n2 == None:
@@ -51,14 +51,15 @@ known_cmaps = {2:'s3_2', 3:'Set1'}
 
 
 if __name__ == '__main__':
-    N = 3
-    sqn = 4
+    N = 4
+    sqn = 2
     digits = sqn**2
     
     wireframe_on = False
     voxels_on = False
     voxel_projection_on = False
     save = True
+    custom_handling = False
     
     S = sudk.Sudoku(digits=digits,N=N,constraints=())
     
@@ -108,7 +109,11 @@ if __name__ == '__main__':
                     xy=(p[0]-1/2, p[1]-1/2) ,width=1, height=1,
                     linewidth=1, color=tuple(colouring[i][:3])+(0.4,)))
                 ax.text(p[0]-0.1, p[1]-0.1, f'{H[i]+1}')
-                
+        if save:
+            img = np.zeros((digits,)*N)
+            for i,p in enumerate(POS):
+                img[p[0],p[1],p[2]] = H[i]+1
+            io.imsave(f'N3_digits{digits}.tif',img)
         if wireframe_on:
             for e in G.edges():
                 E = np.array([S.find_indices(e[0]), S.find_indices(e[1])])
@@ -134,13 +139,12 @@ if __name__ == '__main__':
             for i,p in enumerate(POS):
                 img[p[0],p[1],p[2]] = H[i]+1
             io.imsave(f'N3_digits{digits}.tif',img)
-                
         if wireframe_on:
             for e in G.edges():
                 E = np.array([S.find_indices(e[0]), S.find_indices(e[1])])
                 ax.plot(E[:,0],E[:,1],E[:,2], color=(0.5,0.5,0.5,0.4))
         ax.set_xticks([]),ax.set_yticks([]),ax.set_zticks([])
-    elif N == 4 and sqn == 2: 
+    elif N == 4 and sqn == 2 and custom_handling: 
         fig = plt.figure()
         ax = fig.add_subplot(111, projection="3d")
         
@@ -159,9 +163,17 @@ if __name__ == '__main__':
                 E = np.array([S.find_indices(e[0]), S.find_indices(e[1])])
                 ax.plot(*np.array(np.array([E[:,0],E[:,1],E[:,2]]) + 5*np.array([tetra(d4) for d4 in E[:,3]]).transpose(1,0)), color=(0.5,0.5,0.5,0.4))
         ax.set_xticks([]),ax.set_yticks([]),ax.set_zticks([])
+    else:
+        colouring = np.array([C[H[v]] for v in G.nodes()])
+        POS = np.array([S.find_indices(n) for n in G.nodes()])
+        img = np.zeros((digits,)*N)
+        for i,p in enumerate(POS):
+            img[tuple(p)] = H[i]+1
+        io.imsave(f'N{N}_digits{digits}.tif',img)
+        # use the line below in case of wrongful RGB/RGBA detection
+        # viewer.add_image(viewer.layers[-1].data, rgb=False)
         
-        
-    if N < 4 or (N,sqn)==(4,2):
+    if (N < 4 or (N,sqn)==(4,2)) and custom_handling:
         cbar = fig.colorbar(cm.ScalarMappable(cmap=c_str), ax=ax, ticks=np.linspace(0,1,digits))
         cbar.ax.set_yticklabels(range(1,digits+1))
         plt.show()
