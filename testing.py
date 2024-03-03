@@ -4,11 +4,11 @@ from matplotlib import cm
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.patches import Rectangle
 import networkx as nx
+from utils import make_cmap
 #import nxviz as nv
 from skimage import io
 import sudktools as sudk
 
-import napari.layers
 
 def K(n1, n2=None):
     if n2 == None:
@@ -24,56 +24,31 @@ def orthogonal(n):
     return G
 
 
-def make_cmap(colouring:dict, sqn:int, cmap_str:str = 'Spectral'):
-    digits = sqn**2
-    if sqn in known_cmaps.keys(): cmap_str = known_cmaps[sqn]
-    cmap = cm.get_cmap(cmap_str)
-    maxcol = max(colouring.values())
-    return [cmap(k/(digits-1)) for k in range(digits)] + [(0,0,0,0.4)]*int(abs(maxcol+1-digits)), cmap_str
-    
-s3_2 = LinearSegmentedColormap('s3_2', {
-    'red':[(0.0, 0.0, 0.0),
-           (0.25,0.1, 0.1),
-           (0.5, 0.85, 0.85),
-           (1.0,1.0, 1.0)],
-    'green':[(0.0, 1.0, 1.0),
-             (0.25,0.5, 0.5),
-             (0.75, 0.0, 0.0),
-             (1.0,0.5, 0.5)],
-    'blue':[(0.0, 0.5, 0.5),
-            (0.25,0.75, 0.75),
-            (0.75, 0.9, 0.9),
-            (1.0,0.1, 0.1)]    
-})
-plt.register_cmap(cmap=s3_2)
 
-known_cmaps = {2:'s3_2', 3:'Set1'}
 
 
 if __name__ == '__main__':
-    N = 4
+    N = 3
     sqn = 2
     digits = sqn**2
     
-    wireframe_on = False
-    voxels_on = False
+    wireframe_on = True
+    voxels_on = True
     voxel_projection_on = False
-    save = True
-    custom_handling = False
+    save = False
+    custom_handling = True
+    display = True
     
     S = sudk.Sudoku(digits=digits,N=N,constraints=())
-    
-    '''
-    for line in S.adjacency: 
-            for i in line: print(int(i), end=' ')
-            print('')
-    '''
-    
     G = nx.from_numpy_array(S.adjacency)
-    #print(dict( (n,S.find_indices(n)) for n in G.nodes() ))
+    subcube = nx.from_numpy_array(S.subcube)
+    
+    
+    
+    
+    
     
     init_strat = None
-    
     if init_strat is None:
         D = {}
         for strat in ('saturation_largest_first','independent_set','largest_first'):
@@ -92,9 +67,13 @@ if __name__ == '__main__':
         mH = max(H.values())+1
         name = init_strat if type(init_strat) == str else init_strat.__name__
         print(f'number of colours {name} : ', mH)
+
+    
     
     C, c_str = make_cmap(H, sqn)
     
+    if not display: exit()
+
     if N == 2:
         fig = plt.figure()
         fig.set_figheight(4.8), fig.set_figwidth(6)
