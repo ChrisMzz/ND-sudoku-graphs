@@ -1,12 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib import cm
-from matplotlib.colors import LinearSegmentedColormap
-from matplotlib.patches import Rectangle
 import networkx as nx
 from utils import make_cmap
 #import nxviz as nv
-from skimage import io
 import sudktools as sudk
 
 
@@ -19,7 +15,7 @@ import sudktools as sudk
 
 
 if __name__ == '__main__':
-    N = 5
+    N = 4
     sqn = 3
     digits = sqn**2
     
@@ -30,7 +26,7 @@ if __name__ == '__main__':
     custom_handling = True
     display = True
     
-    S = sudk.Sudoku(digits=digits,N=N,constraints=())
+    S = sudk.Sudoku(digits=digits,N=N)
     G = nx.from_numpy_array(S.adjacency)
     subG = nx.from_numpy_array(S.subcube_adjacency)
     
